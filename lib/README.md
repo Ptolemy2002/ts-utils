@@ -27,6 +27,9 @@ This type returns a union of the type `T` and a promise that resolves to the typ
 ### TAndOthers<T, K extends keyof any = PropertyKey>
 This type returns an object with all the properties of `T` and any number of other properties under keys that fit the type `K`. The additional properties will all have the type `any` because I couldn't figure out how to make them have a type that does not include `ValueOf<T>` due to the way Typescript handles mapped object types.
 
+### KeysMatching<T, V>
+This type returns a union of all the keys in `T` that have a value assignable to `V`.
+
 ## Peer Dependencies
 None
 

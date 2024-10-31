@@ -33,6 +33,9 @@ This type returns a union of all the keys in `T` that have a value assignable to
 ## Peer Dependencies
 None
 
+## PartialBy<T, K extends keyof T>
+This type returns a type that is the same as `T` except that the keys in `K` are optional.
+
 ## Commands
 The following commands exist in the project:
 

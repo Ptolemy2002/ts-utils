@@ -27,7 +27,7 @@ export function valueConditionMatches<T>(value: T, condition: OptionalValueCondi
     if (isCallable(condition)) return condition(value);
 
     // If the condition value here is not a condition object, it must be of type T, so we can directly compare it
-    if (!(condition as any)._isCondition) return Object.is(value, condition);
+    if ((condition as any)._isCondition !== true) return Object.is(value, condition);
 
     let { include=[], exclude=[], match=Object.is } = condition as Exclude<typeof condition, T>;
 

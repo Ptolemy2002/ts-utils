@@ -38,13 +38,14 @@ const testAndOthers: TestAndOthers = {
 
 const testValueCondition1 = valueConditionMatches(1, 1);
 const testValueCondition2 = valueConditionMatches(1, [1, 2]);
-const testValueCondition3 = valueConditionMatches(1, { include: [1], exclude: [2] });
-const testValueCondition4 = valueConditionMatches(2, { include: [1], exclude: [2] });
-const testValueCondition5 = valueConditionMatches(2, { match: (a, b) => a === b });
+const testValueCondition3 = valueConditionMatches(1, { _isCondition: true, include: [1], exclude: [2] });
+const testValueCondition4 = valueConditionMatches(2, { _isCondition: true, include: [1], exclude: [2] });
+const testValueCondition5 = valueConditionMatches(2, { _isCondition: true, match: (a, b) => a === b });
 const testValueCondition6 = valueConditionMatches(2, (v: number) => v === 2);
 const testValueCondition7 = valueConditionMatches(2, null);
-const testValueCondition8 = valueConditionMatches(2, { include: [false && 2]});
-const testValueCondition9 = valueConditionMatches(2, { exclude: [false && 2]});
+const testValueCondition8 = valueConditionMatches(2, { _isCondition: true, include: [false && 2]});
+const testValueCondition9 = valueConditionMatches(2, { _isCondition: true, exclude: [false && 2]});
+const testValueCondition10 = valueConditionMatches(2, 1);
 
 console.assert(testValueCondition1, "Test Value Condition 1");
 console.assert(testValueCondition2, "Test Value Condition 2");
@@ -55,5 +56,6 @@ console.assert(testValueCondition6, "Test Value Condition 6");
 console.assert(testValueCondition7, "Test Value Condition 7");
 console.assert(!testValueCondition8, "Test Value Condition 8");
 console.assert(testValueCondition9, "Test Value Condition 9");
+console.assert(!testValueCondition10, "Test Value Condition 10");
 
 console.log("Compiled without errors");

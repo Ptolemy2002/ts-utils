@@ -15,19 +15,21 @@ export type KeysMatching<T, V> = {[K in keyof T]-?: T[K] extends V ? K : never}[
 
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
-export type ValueCondition<T> = Partial<{
+export type ValueCondition<T> = ({_isCondition: true} & Partial<{
     include: T | ((v: T) => boolean) | (T | ((v: T) => boolean) | false)[];
     exclude: T | ((v: T) => boolean) | (T | ((v: T) => boolean) | false)[];
     match: (a: T, b: T) => boolean;
-}> | T | ((v: T) => boolean) | (ValueCondition<T> | false)[];
+}>) | T | ((v: T) => boolean) | (ValueCondition<T> | false)[];
 export type OptionalValueCondition<T> = ValueCondition<T> | null;
 export function valueConditionMatches<T>(value: T, condition: OptionalValueCondition<T>): boolean {
     if (condition === null) return true;
-    if (Object.is(value, condition)) return true;
     if (Array.isArray(condition)) return condition.some(c => c !== false && valueConditionMatches(value, c));
     if (isCallable(condition)) return condition(value);
 
-    let { include=[], exclude=[], match=Object.is } = condition as Exclude<typeof condition, T | Function>;
+    // If the condition value here is not a condition object, it must be of type T, so we can directly compare it
+    if (!(condition as any)._isCondition) return Object.is(value, condition);
+
+    let { include=[], exclude=[], match=Object.is } = condition as Exclude<typeof condition, T>;
 
     if (!Array.isArray(include)) include = [include];
     if (!Array.isArray(exclude)) exclude = [exclude];

@@ -36,7 +36,7 @@ This type returns a type that is the same as `T` except that the keys in `K` are
 ### ValueCondition<T>
 This type allows the user to specify a condition for matching a subset of type `T`. It can be one of the following:
 - A value of type `T`
-- An object with keys `include` and `exclude` that are both either objects of type `T`, functions that take a value of `T` and return a boolean, or arrays of objects of any of the preceding types or `false`. In addition, there is a `match` key that takes 2 values of type `T` and returns a boolean. Each of these keys is optional.
+- An object with keys `include` and `exclude` that are both either objects of type `T`, functions that take a value of `T` and return a boolean, or arrays of objects of any of the preceding types or `false`. In addition, there is a `match` key that takes 2 values of type `T` and returns a boolean. Each of these keys is optional. The one required key is `_isCondition` which should be set to `true`. This allows this condition object to be distinguished from a regular object of type `T`.
 - An array of objects of type `T | ValueCondition<T> | false`.
 - A function that takes a value of type `T` and returns a boolean.
 

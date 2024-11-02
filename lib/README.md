@@ -30,11 +30,37 @@ This type returns an object with all the properties of `T` and any number of oth
 ### KeysMatching<T, V>
 This type returns a union of all the keys in `T` that have a value assignable to `V`.
 
-## Peer Dependencies
-None
-
-## PartialBy<T, K extends keyof T>
+### PartialBy<T, K extends keyof T>
 This type returns a type that is the same as `T` except that the keys in `K` are optional.
+
+### ValueCondition<T>
+This type allows the user to specify a condition for matching a subset of type `T`. It can be one of the following:
+- A value of type `T`
+- An object with keys `include` and `exclude` that are both either objects of type `T`, functions that take a value of `T` and return a boolean, or arrays of objects of any of the preceding types or `false`. In addition, there is a `match` key that takes 2 values of type `T` and returns a boolean. Each of these keys is optional.
+- An array of objects of type `T | ValueCondition<T> | false`.
+- A function that takes a value of type `T` and returns a boolean.
+
+The condition can then be passed to the `valueConditionMatches` function along with a value of type `T` to determine if the condition is met for that value.
+
+### OptionalValueCondition<T>
+This type is the same as `ValueCondition<T>` except that the value can also be `null`, indicating any value is acceptable.
+
+## Functions
+The following functions are available in the library:
+
+### valueConditionMatches<T>
+#### Description
+This function takes a value of type `T` and a condition of type `OptionalValueCondition<T>` and returns a boolean indicating whether the value meets the condition. If the condition is `null`, the function will always return `true`. Any instance of the value `false` will be filtered out of lists. If `match` is not specified, it will default to `Object.is`. If `include` is not specified or empty, it will be ignored and `exclude` will act as the only constraint. If `exclude` is not specified, it will be assumed to be empty.
+
+#### Parameters
+- `value` (`T`) - The value to check against the condition.
+- `condition` (`OptionalValueCondition<T>`) - The condition to check against the value.
+
+#### Returns
+- `boolean` - Whether the value meets the condition.
+
+## Peer Dependencies
+- `is-callable^1.2.7`
 
 ## Commands
 The following commands exist in the project:

@@ -26,5 +26,11 @@
         "release-minor": "bash ./scripts/release.sh minor",
         "release-major": "bash ./scripts/release.sh major"
     },
-    "devDependencies": {}
+    "peerDependencies": {
+        "is-callable": "^1.2.7"
+    },
+    "devDependencies": {
+        "@types/is-callable": "~1.1.2",
+        "is-callable": "^1.2.7"
+    }
 }

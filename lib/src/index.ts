@@ -14,6 +14,13 @@ export type TAndOthers<T, K extends keyof any = PropertyKey> = Record<K, any> & 
 export type KeysMatching<T, V> = {[K in keyof T]-?: T[K] extends V ? K : never}[keyof T];
 export type KeysNotMatching<T, V> = {[K in keyof T]-?: T[K] extends V ? never : K}[keyof T];
 
+export type EqualTypes<T, U, Y=unknown, N=never> =
+  (<G>() => G extends T ? 1 : 2) extends
+  (<G>() => G extends U ? 1 : 2) ? Y : N;
+
+export type KeysMatchingEqualTypes<T, V> = {[K in keyof T]-?: EqualTypes<T[K], V, K>}[keyof T];
+export type KeysNotMatchingEqualTypes<T, V> = {[K in keyof T]-?: EqualTypes<T[K], V, never, K>}[keyof T];
+
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export type AtLeastOne<T, U = {[K in keyof T]: Pick<T, K> }> = Partial<T> & U[keyof U];

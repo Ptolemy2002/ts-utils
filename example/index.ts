@@ -1,6 +1,6 @@
 import {
     ValueOf, MaybeTransformer, MaybeTransformerRecord, MaybePromise, TAndOthers,
-    valueConditionMatches
+    valueConditionMatches, AtLeastOne
 } from '@ptolemy2002/ts-utils';
 
 type Test = {
@@ -35,6 +35,15 @@ const testAndOthers: TestAndOthers = {
 
     d: 4
 };
+
+type AtLeastOneTest = AtLeastOne<Test>;
+const atLeastOneTest1: AtLeastOneTest = { a: 1 };
+const atLeastOneTest2: AtLeastOneTest = { b: '2' };
+const atLeastOneTest3: AtLeastOneTest = { c: true };
+const atLeastOneTest4: AtLeastOneTest = { a: 1, b: '2' };
+const atLeastOneTest5: AtLeastOneTest = { a: 1, c: true };
+const atLeastOneTest6: AtLeastOneTest = { b: '2', c: true };
+const atLeastOneTest7: AtLeastOneTest = { a: 1, b: '2', c: true };
 
 const testValueCondition1 = valueConditionMatches(1, 1);
 const testValueCondition2 = valueConditionMatches(1, [1, 2]);

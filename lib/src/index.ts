@@ -15,6 +15,8 @@ export type KeysMatching<T, V> = {[K in keyof T]-?: T[K] extends V ? K : never}[
 
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
+export type AtLeastOne<T, U = {[K in keyof T]: Pick<T, K> }> = Partial<T> & U[keyof U];
+
 export type ValueCondition<T> = ({_isCondition: true} & Partial<{
     include: T | ((v: T) => boolean) | (T | ((v: T) => boolean) | false)[];
     exclude: T | ((v: T) => boolean) | (T | ((v: T) => boolean) | false)[];

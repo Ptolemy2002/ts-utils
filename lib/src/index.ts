@@ -25,11 +25,33 @@ export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export type AtLeastOne<T, U = {[K in keyof T]: Pick<T, K> }> = Partial<T> & U[keyof U];
 
-export type ValueCondition<T> = ({_isCondition: true} & Partial<{
-    include: T | ((v: T) => boolean) | (T | ((v: T) => boolean) | false)[];
-    exclude: T | ((v: T) => boolean) | (T | ((v: T) => boolean) | false)[];
-    match: (a: T, b: T) => boolean;
-}>) | T | ((v: T) => boolean) | (ValueCondition<T> | false)[];
+
+export type AdvancedConditionConstructorArgs<T> = {
+    include?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean) | false)[],
+    exclude?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean | false))[],
+    match?: (a: T, b: T) => boolean
+};
+export class AdvancedCondition<T> {
+    // This private member allows us to disallow literal objects to be recognized as
+    // matching this type.
+    private declare kind: "Condition";
+
+    include: AdvancedConditionConstructorArgs<T>["include"];
+    exclude: AdvancedConditionConstructorArgs<T>["exclude"];
+    match?: AdvancedConditionConstructorArgs<T>["match"];
+
+    constructor({include=[], exclude=[], match= Object.is}: AdvancedConditionConstructorArgs<T> = {}) {
+        this.include = include;
+        this.exclude = exclude;
+        this.match = match;
+    }
+
+    static isCondition<T>(value: any): value is AdvancedCondition<T> {
+        return value instanceof AdvancedCondition;
+    }
+}
+
+export type ValueCondition<T> = AdvancedCondition<T> | T | ((v: T) => boolean) | (ValueCondition<T> | false)[];
 export type OptionalValueCondition<T> = ValueCondition<T> | null;
 export function valueConditionMatches<T>(value: T, condition: OptionalValueCondition<T>): boolean {
     if (condition === null) return true;
@@ -37,9 +59,9 @@ export function valueConditionMatches<T>(value: T, condition: OptionalValueCondi
     if (isCallable(condition)) return condition(value);
 
     // If the condition value here is not a condition object, it must be of type T, so we can directly compare it
-    if ((condition as any)._isCondition !== true) return Object.is(value, condition);
+    if (!AdvancedCondition.isCondition(condition)) return Object.is(value, condition);
 
-    let { include=[], exclude=[], match=Object.is } = condition as Exclude<typeof condition, T>;
+    let { include=[], exclude=[], match=Object.is } = condition;
 
     if (!Array.isArray(include)) include = [include];
     if (!Array.isArray(exclude)) exclude = [exclude];

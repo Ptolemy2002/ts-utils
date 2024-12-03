@@ -36,7 +36,7 @@ This type returns a type that is the same as `T` except that the keys in `K` are
 ### ValueCondition<T>
 This type allows the user to specify a condition for matching a subset of type `T`. It can be one of the following:
 - A value of type `T`
-- An object with keys `include` and `exclude` that are both either objects of type `T`, functions that take a value of `T` and return a boolean, or arrays of objects of any of the preceding types or `false`. In addition, there is a `match` key that takes 2 values of type `T` and returns a boolean. Each of these keys is optional. The one required key is `_isCondition` which should be set to `true`. This allows this condition object to be distinguished from a regular object of type `T`.
+- An instance of `AdvancedCondition<T>`
 - An array of objects of type `T | ValueCondition<T> | false`.
 - A function that takes a value of type `T` and returns a boolean.
 
@@ -44,6 +44,28 @@ The condition can then be passed to the `valueConditionMatches` function along w
 
 ### OptionalValueCondition<T>
 This type is the same as `ValueCondition<T>` except that the value can also be `null`, indicating any value is acceptable.
+
+### AdvancedConditionConstructorArgs<T>
+```typescript
+type AdvancedConditionConstructorArgs<T> = {
+    include?: T | ((v: T) => boolean) | (T | ((v: T) => boolean) | false)[],
+    exclude?: T | ((v: T) => boolean) | (T | ((v: T) => boolean | false))[],
+    match?: (a: T, b: T) => boolean
+};
+```
+
+## Classes
+The following classes are available in the library:
+
+### AdvancedCondition<T>
+#### Description
+This class is used to create an advanced condition for matching a subset of type `T`. Note that a normal object with the same properties as `AdvancedConditionConstructorArgs<T>` cannot be used in place of this class instance, contrary to how Typescript normally handles classes. A hack has been used to disable this behavior.
+
+#### Properties
+- `args: AdvancedConditionConstructorArgs<T>` - The arguments used to construct the condition.
+    - `include?` (`AdvancedConditionConstructorArgs["include"]`) - The value or values that must be included in the condition. If this is a function, it will be used to determine if a value should be included. If this is an instance of `Condition`, it will be used as a subcondition. If this is `false`, it will be ignored.
+    - `exclude?` (`AdvancedConditionConstructorArgs["exclude"]`) - The value or values that must be excluded from the condition. If this is a function, it will be used to determine if a value should be excluded. If this is an instance of `Condition`, it will be used as a subcondition. If this is `false`, it will be ignored.
+    - `match?` (`AdvancedConditionConstructorArgs["match"]`) - The function used to determine if two values are equal. If this is not specified, it will default to `Object.is`.
 
 ## Functions
 The following functions are available in the library:

@@ -78,3 +78,5 @@ export function valueConditionMatches<T>(value: T, condition: OptionalValueCondi
     if (include.length === 0) return !excluded(value);
     return included(value) && !excluded(value);
 }
+
+export type Rename<T, K extends keyof T, N extends string> = Pick<T, Exclude<keyof T, K>> & { [P in N]: T[K] }

@@ -33,6 +33,10 @@ This type returns a union of all the keys in `T` that have a value assignable to
 ### PartialBy<T, K extends keyof T>
 This type returns a type that is the same as `T` except that the keys in `K` are optional.
 
+### Rename<T, K extends keyof T, N extends string>
+This type returns a type that is the same as `T` except that the key `K` is renamed to `N`.
+
+
 ### ValueCondition<T>
 This type allows the user to specify a condition for matching a subset of type `T`. It can be one of the following:
 - A value of type `T`

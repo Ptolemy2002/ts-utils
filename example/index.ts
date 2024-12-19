@@ -1,6 +1,6 @@
 import {
     ValueOf, MaybeTransformer, MaybeTransformerRecord, MaybePromise, TAndOthers,
-    valueConditionMatches, AtLeastOne,
+    Rename, valueConditionMatches, AtLeastOne,
     AdvancedCondition
 } from '@ptolemy2002/ts-utils';
 
@@ -35,6 +35,13 @@ const testAndOthers: TestAndOthers = {
     c: true,
 
     d: 4
+};
+
+type TestRename = Rename<Test, 'a', 'x'>;
+const testRename: TestRename = {
+    x: 1,
+    b: '2',
+    c: true
 };
 
 type AtLeastOneTest = AtLeastOne<Test>;

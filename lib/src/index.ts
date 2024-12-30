@@ -80,3 +80,12 @@ export function valueConditionMatches<T>(value: T, condition: OptionalValueCondi
 }
 
 export type Rename<T, K extends keyof T, N extends string> = Pick<T, Exclude<keyof T, K>> & { [P in N]: T[K] }
+
+export type ValuesIntersection<T> = ValueOf<{
+    // Convert each key to a function
+    [K in keyof T]: (x: T[K]) => void;
+
+    // We now have a union of all these functions
+    // We can now get the parameter type of this union
+    // to get the union of all the values
+}> extends (x: infer I) => void ? I : never;

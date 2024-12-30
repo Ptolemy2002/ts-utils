@@ -1,7 +1,8 @@
 import {
     ValueOf, MaybeTransformer, MaybeTransformerRecord, MaybePromise, TAndOthers,
     Rename, valueConditionMatches, AtLeastOne,
-    AdvancedCondition
+    AdvancedCondition,
+    ValuesIntersection
 } from '@ptolemy2002/ts-utils';
 
 type Test = {
@@ -43,6 +44,18 @@ const testRename: TestRename = {
     b: '2',
     c: true
 };
+
+type Test1 = {
+    a: {
+        x: number;
+        y: string;
+    },
+    b: {
+        z: boolean;
+    }
+};
+
+type ValuesIntersectionTest = ValuesIntersection<Test1>;
 
 type AtLeastOneTest = AtLeastOne<Test>;
 const atLeastOneTest1: AtLeastOneTest = { a: 1 };

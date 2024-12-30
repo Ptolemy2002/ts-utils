@@ -58,6 +58,9 @@ type AdvancedConditionConstructorArgs<T> = {
 };
 ```
 
+### ValuesIntersection<T>
+This type returns an intersection of all the possible values in an object of type `T`.
+
 ## Classes
 The following classes are available in the library:
 

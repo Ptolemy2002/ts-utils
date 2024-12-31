@@ -24,6 +24,9 @@ Given a type `T`, this type loops through every key `K` and wraps that key's val
 ### MaybePromise<T>
 This type returns a union of the type `T` and a promise that resolves to the type `T`.
 
+### MaybeArray<T>
+This type returns a union of the type `T` and an array of that type.
+
 ### TAndOthers<T, K extends keyof any = PropertyKey>
 This type returns an object with all the properties of `T` and any number of other properties under keys that fit the type `K`. The additional properties will all have the type `any` because I couldn't figure out how to make them have a type that does not include `ValueOf<T>` due to the way Typescript handles mapped object types.
 
@@ -32,6 +35,12 @@ This type returns a union of all the keys in `T` that have a value assignable to
 
 ### PartialBy<T, K extends keyof T>
 This type returns a type that is the same as `T` except that the keys in `K` are optional.
+
+### AtLeastOne<T, U = {[K in keyof T]: Pick<T, K> }>
+This type returns a type that is the same as `T` except that at least one key is required.
+
+### Override<T, U>
+This type returns a type that is the same as `T` except that the keys in `U` are overridden with the values in `U`.
 
 ### Rename<T, K extends keyof T, N extends string>
 This type returns a type that is the same as `T` except that the key `K` is renamed to `N`.

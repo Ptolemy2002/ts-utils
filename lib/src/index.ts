@@ -8,6 +8,7 @@ export type MaybeTransformerRecord<T, Args extends any[] = []> = {
 };
 
 export type MaybePromise<T> = T | Promise<T>;
+export type MaybeArray<T> = T | T[];
 
 export type TAndOthers<T, K extends keyof any = PropertyKey> = Record<K, any> & T;
 
@@ -22,9 +23,9 @@ export type KeysMatchingEqualTypes<T, V> = {[K in keyof T]-?: EqualTypes<T[K], V
 export type KeysNotMatchingEqualTypes<T, V> = {[K in keyof T]-?: EqualTypes<T[K], V, never, K>}[keyof T];
 
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-
 export type AtLeastOne<T, U = {[K in keyof T]: Pick<T, K> }> = Partial<T> & U[keyof U];
 
+export type Override<T, U> = Omit<T, keyof U> & U;
 
 export type AdvancedConditionConstructorArgs<T> = {
     include?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean) | false)[],

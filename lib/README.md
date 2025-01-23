@@ -70,6 +70,42 @@ type AdvancedConditionConstructorArgs<T> = {
 ### ValuesIntersection<T>
 This type returns an intersection of all the possible values in an object of type `T`.
 
+### Contains<L extends unknown[], T>
+This type returns a boolean indicating whether the type `T` is contained in the array `L`.
+
+### BrandTag<B extends unknown[]>
+This type returns a record with a single key of type `__brand` and a value of type `B`. It represents a brand that can be used to differentiate between types.
+
+Branded types are useful for making checks at runtime through assertion functions and recognizing these checks at compile time. For example:
+```typescript
+function isPositive(value: number): value is Branded<number, ["positive"]> {
+    return value > 0;
+}
+
+function takesPositive(value: WithBrand<number, "positive">) {
+    // Do something with the positive value
+}
+
+const value: number = 5;
+if (isPositive(value)) {
+    // Succeeds because value has been asserted to be positive
+    takesPositive(value);
+}
+
+// Error: value may not be positive, as we cannot guarantee the assertion succeeded
+takesPositive(value);
+```
+
+### Branded<T, B extends unknown[]>
+This type returns a type that is the same as `T` except that it is branded with the type `B`.
+
+### WithBrand<T, B>
+Using the `Contains` type, this type returns `T` if it is branded with `B` and `never` otherwise.
+
+## Values
+### declare const __brand
+A unique symbol used to define type brands.
+
 ## Classes
 The following classes are available in the library:
 

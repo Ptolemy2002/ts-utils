@@ -117,3 +117,9 @@ export type WithBrand<T, B> =
 export function brandValue<B extends unknown[], T>(value: T): Branded<T, B> {
     return value as Branded<T, B>;
 }
+
+export function omit<T extends object, K extends keyof T>(obj: T, ...keys: K[]): Omit<T, K> {
+    const _ = { ...obj }
+    keys.forEach((key) => delete _[key])
+    return _
+}

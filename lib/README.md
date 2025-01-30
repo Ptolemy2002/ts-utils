@@ -133,6 +133,17 @@ This function takes a value of type `T` and a condition of type `OptionalValueCo
 #### Returns
 - `boolean` - Whether the value meets the condition.
 
+### omit<T, K extends keyof T>
+#### Description
+This function takes an object of type `T` and a list of keys `K` and returns a new object with all the keys in `K` removed.
+
+#### Parameters
+- `object` (`T`) - The object to omit keys from.
+- `keys` (`K[]`) - The keys to omit from the object.
+
+#### Returns
+- `Omit<T, K>` - The object with the keys omitted.
+
 ## Peer Dependencies
 - `is-callable^1.2.7`
 

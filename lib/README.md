@@ -58,13 +58,16 @@ The condition can then be passed to the `valueConditionMatches` function along w
 ### OptionalValueCondition<T>
 This type is the same as `ValueCondition<T>` except that the value can also be `null`, indicating any value is acceptable.
 
-### AdvancedConditionConstructorArgs<T>
+### AdvancedCondition<T>
 ```typescript
-type AdvancedConditionConstructorArgs<T> = {
-    include?: T | ((v: T) => boolean) | (T | ((v: T) => boolean) | false)[],
-    exclude?: T | ((v: T) => boolean) | (T | ((v: T) => boolean | false))[],
+declare const advancedConditionSymbol: unique symbol;
+
+type AdvancedCondition<T> = Branded<{
+    __isAdvancedCondition: true,
+    include?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean) | false)[],
+    exclude?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean | false))[],
     match?: (a: T, b: T) => boolean
-};
+}, [typeof advancedConditionSymbol]>;
 ```
 
 ### ValuesIntersection<T>
@@ -102,25 +105,38 @@ This type returns a type that is the same as `T` except that it is branded with 
 ### WithBrand<T, B>
 Using the `Contains` type, this type returns `T` if it is branded with `B` and `never` otherwise.
 
+### WithoutBrand<T extends BrandTag<unknown[]>>
+This type returns the inner type without the brand applied to it.
+
 ## Values
 ### declare const __brand
 A unique symbol used to define type brands.
 
-## Classes
-The following classes are available in the library:
-
-### AdvancedCondition<T>
-#### Description
-This class is used to create an advanced condition for matching a subset of type `T`. Note that a normal object with the same properties as `AdvancedConditionConstructorArgs<T>` cannot be used in place of this class instance, contrary to how Typescript normally handles classes. A hack has been used to disable this behavior.
-
-#### Properties
-- `args: AdvancedConditionConstructorArgs<T>` - The arguments used to construct the condition.
-    - `include?` (`AdvancedConditionConstructorArgs["include"]`) - The value or values that must be included in the condition. If this is a function, it will be used to determine if a value should be included. If this is an instance of `Condition`, it will be used as a subcondition. If this is `false`, it will be ignored.
-    - `exclude?` (`AdvancedConditionConstructorArgs["exclude"]`) - The value or values that must be excluded from the condition. If this is a function, it will be used to determine if a value should be excluded. If this is an instance of `Condition`, it will be used as a subcondition. If this is `false`, it will be ignored.
-    - `match?` (`AdvancedConditionConstructorArgs["match"]`) - The function used to determine if two values are equal. If this is not specified, it will default to `Object.is`.
-
 ## Functions
 The following functions are available in the library:
+
+### isAdvancedCondition
+#### Description
+This function takes a value of any type and returns a boolean indicating whether the value is an instance of `AdvancedCondition` by checking for the `__isAdvancedCondition` property and ensuring it is `true`.
+
+#### Parameters
+- `value` (`any`) - The value to check.
+
+#### Returns
+`value is AdvancedCondition<any>` - Boolean determining whether the value is an instance of `AdvancedCondition`. It functions as a type guard in Typescript.
+
+### createAdvancedCondition<T>
+#### Description
+This function creates an instance of `AdvancedCondition` with the specified arguments and sensible defaults applied.
+
+#### Parameters
+- `condition` (`WithoutBrand<Omit<AdvancedCondition<T>, "__isAdvancedCondition">>`) - The arguments to use in constructing the condition.
+    - `include` - The value or values that must be included in the condition. If this is a function, it will be used to determine if a value should be included. If this is `false`, it will be ignored.
+    - `exclude` - The value or values that must be excluded from the condition. If this is a function, it will be used to determine if a value should be excluded. If this is `false`, it will be ignored.
+    - `match` - The function used to determine if two values are equal. If this is not specified, it will default to `Object.is`.
+
+#### Returns
+`AdvancedCondition<T>` - The advanced condition instance.
 
 ### valueConditionMatches<T>
 #### Description
@@ -131,7 +147,7 @@ This function takes a value of type `T` and a condition of type `OptionalValueCo
 - `condition` (`OptionalValueCondition<T>`) - The condition to check against the value.
 
 #### Returns
-- `boolean` - Whether the value meets the condition.
+`boolean` - Whether the value meets the condition.
 
 ### omit<T, K extends keyof T>
 #### Description
@@ -142,7 +158,7 @@ This function takes an object of type `T` and a list of keys `K` and returns a n
 - `keys` (`K[]`) - The keys to omit from the object.
 
 #### Returns
-- `Omit<T, K>` - The object with the keys omitted.
+`Omit<T, K>` - The object with the keys omitted.
 
 ## Peer Dependencies
 - `is-callable^1.2.7`

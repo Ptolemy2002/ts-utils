@@ -27,28 +27,29 @@ export type AtLeastOne<T, U = {[K in keyof T]: Pick<T, K> }> = Partial<T> & U[ke
 
 export type Override<T, U> = Omit<T, keyof U> & U;
 
-export type AdvancedConditionConstructorArgs<T> = {
+export declare const advancedConditionSymbol: unique symbol;
+
+export type AdvancedCondition<T> = Branded<{
+    // This tag functions as a runtime brand check. The "Branded" wrapper works only on compile time
+    __isAdvancedCondition: true,
     include?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean) | false)[],
     exclude?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean | false))[],
     match?: (a: T, b: T) => boolean
-};
-export class AdvancedCondition<T> {
-    // This private member allows us to disallow literal objects to be recognized as
-    // matching this type.
-    private declare kind: "Condition";
+}, [typeof advancedConditionSymbol]>;
 
-    include: AdvancedConditionConstructorArgs<T>["include"];
-    exclude: AdvancedConditionConstructorArgs<T>["exclude"];
-    match?: AdvancedConditionConstructorArgs<T>["match"];
+export function isAdvancedCondition(value: any): value is AdvancedCondition<any> {
+    return "__isAdvancedCondition" in value && value.__isAdvancedCondition === true;
+}
 
-    constructor({include=[], exclude=[], match= Object.is}: AdvancedConditionConstructorArgs<T> = {}) {
-        this.include = include;
-        this.exclude = exclude;
-        this.match = match;
-    }
-
-    static isCondition<T>(value: any): value is AdvancedCondition<T> {
-        return value instanceof AdvancedCondition;
+export function createAdvancedCondition<T>(
+    condition: WithoutBrand<Omit<AdvancedCondition<T>, "__isAdvancedCondition">>
+): AdvancedCondition<T> {
+    return {
+        __isAdvancedCondition: true,
+        include: [],
+        exclude: [],
+        match: Object.is,
+        ...brandValue<[typeof advancedConditionSymbol], typeof condition>(condition)
     }
 }
 
@@ -60,7 +61,7 @@ export function valueConditionMatches<T>(value: T, condition: OptionalValueCondi
     if (isCallable(condition)) return condition(value);
 
     // If the condition value here is not a condition object, it must be of type T, so we can directly compare it
-    if (!AdvancedCondition.isCondition(condition)) return Object.is(value, condition);
+    if (!isAdvancedCondition(condition)) return Object.is(value, condition);
 
     let { include=[], exclude=[], match=Object.is } = condition;
 
@@ -113,6 +114,9 @@ export type WithBrand<T, B> =
         Contains<T[typeof __brand], B> extends true ? T : never
     ) : never
 ;
+export type WithoutBrand<
+    T extends BrandTag<unknown[]>
+> = Omit<T, typeof __brand>;
 
 export function brandValue<B extends unknown[], T>(value: T): Branded<T, B> {
     return value as Branded<T, B>;

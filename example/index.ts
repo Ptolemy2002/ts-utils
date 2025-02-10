@@ -1,10 +1,10 @@
 import {
     ValueOf, MaybeTransformer, MaybeTransformerRecord, MaybePromise, TAndOthers,
     Rename, valueConditionMatches, AtLeastOne,
-    AdvancedCondition,
     ValuesIntersection,
     Branded,
-    WithBrand
+    WithBrand,
+    createAdvancedCondition
 } from '@ptolemy2002/ts-utils';
 
 type Test = {
@@ -70,13 +70,13 @@ const atLeastOneTest7: AtLeastOneTest = { a: 1, b: '2', c: true };
 
 const testValueCondition1 = valueConditionMatches(1, 1);
 const testValueCondition2 = valueConditionMatches(1, [1, 2]);
-const testValueCondition3 = valueConditionMatches(1, new AdvancedCondition({ include: [1], exclude: [2] }));
-const testValueCondition4 = valueConditionMatches(2, new AdvancedCondition({ include: [1], exclude: [2] }));
-const testValueCondition5 = valueConditionMatches(2, new AdvancedCondition({ match: (a, b) => a === b }));
+const testValueCondition3 = valueConditionMatches(1, createAdvancedCondition({ include: [1], exclude: [2] }));
+const testValueCondition4 = valueConditionMatches(2, createAdvancedCondition({ include: [1], exclude: [2] }));
+const testValueCondition5 = valueConditionMatches(2, createAdvancedCondition({ match: (a, b) => a === b }));
 const testValueCondition6 = valueConditionMatches(2, (v: number) => v === 2);
 const testValueCondition7 = valueConditionMatches(2, null);
-const testValueCondition8 = valueConditionMatches(2, new AdvancedCondition<number>({ include: [false && 2]}));
-const testValueCondition9 = valueConditionMatches(2, new AdvancedCondition<number>({ exclude: [false && 2]}));
+const testValueCondition8 = valueConditionMatches(2, createAdvancedCondition<number>({ include: [false && 2]}));
+const testValueCondition9 = valueConditionMatches(2, createAdvancedCondition<number>({ exclude: [false && 2]}));
 const testValueCondition10 = valueConditionMatches(2, 1);
 
 console.assert(testValueCondition1, "Test Value Condition 1");

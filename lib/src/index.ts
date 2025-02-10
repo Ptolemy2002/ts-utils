@@ -1,4 +1,5 @@
 import isCallable = require("is-callable");
+import { Branded, WithoutBrand, brand } from "@ptolemy2002/ts-brand-utils";
 
 export type ValueOf<T> = T[keyof T];
 
@@ -38,7 +39,11 @@ export type AdvancedCondition<T> = Branded<{
 }, [typeof advancedConditionSymbol]>;
 
 export function isAdvancedCondition(value: any): value is AdvancedCondition<any> {
-    return "__isAdvancedCondition" in value && value.__isAdvancedCondition === true;
+    return (
+        typeof value === "object" &&
+        value !== null &&
+        "__isAdvancedCondition" in value && value.__isAdvancedCondition === true
+    );
 }
 
 export function createAdvancedCondition<T>(
@@ -49,7 +54,7 @@ export function createAdvancedCondition<T>(
         include: [],
         exclude: [],
         match: Object.is,
-        ...brandValue<[typeof advancedConditionSymbol], typeof condition>(condition)
+        ...brand<[typeof advancedConditionSymbol], typeof condition>(condition)
     }
 }
 
@@ -105,22 +110,6 @@ export type Contains<L extends unknown[], T> =
     // T is not in the list 
     : false
 ;
-
-export declare const __brand: unique symbol;
-export type BrandTag<B extends unknown[]> = { readonly [__brand]: B };
-export type Branded<T, B extends unknown[]> = T & BrandTag<B>;
-export type WithBrand<T, B> = 
-    T extends BrandTag<unknown[]> ? (
-        Contains<T[typeof __brand], B> extends true ? T : never
-    ) : never
-;
-export type WithoutBrand<
-    T extends BrandTag<unknown[]>
-> = Omit<T, typeof __brand>;
-
-export function brandValue<B extends unknown[], T>(value: T): Branded<T, B> {
-    return value as Branded<T, B>;
-}
 
 export function omit<T extends object, K extends keyof T>(obj: T, ...keys: K[]): Omit<T, K> {
     const _ = { ...obj }

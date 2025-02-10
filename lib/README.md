@@ -9,6 +9,11 @@ import { functionName } from '@ptolemy2002/ts-utils';
 const { functionName } = require('@ptolemy2002/ts-utils');
 ```
 
+## Type Reference
+```typescript
+import { Branded, WithoutBrand } from "@ptolemy2002/ts-brand-utils";
+```
+
 ## Types
 The following types are available in the library:
 
@@ -76,42 +81,6 @@ This type returns an intersection of all the possible values in an object of typ
 ### Contains<L extends unknown[], T>
 This type returns a boolean indicating whether the type `T` is contained in the array `L`.
 
-### BrandTag<B extends unknown[]>
-This type returns a record with a single key of type `__brand` and a value of type `B`. It represents a brand that can be used to differentiate between types.
-
-Branded types are useful for making checks at runtime through assertion functions and recognizing these checks at compile time. For example:
-```typescript
-function isPositive(value: number): value is Branded<number, ["positive"]> {
-    return value > 0;
-}
-
-function takesPositive(value: WithBrand<number, "positive">) {
-    // Do something with the positive value
-}
-
-const value: number = 5;
-if (isPositive(value)) {
-    // Succeeds because value has been asserted to be positive
-    takesPositive(value);
-}
-
-// Error: value may not be positive, as we cannot guarantee the assertion succeeded
-takesPositive(value);
-```
-
-### Branded<T, B extends unknown[]>
-This type returns a type that is the same as `T` except that it is branded with the type `B`.
-
-### WithBrand<T, B>
-Using the `Contains` type, this type returns `T` if it is branded with `B` and `never` otherwise.
-
-### WithoutBrand<T extends BrandTag<unknown[]>>
-This type returns the inner type without the brand applied to it.
-
-## Values
-### declare const __brand
-A unique symbol used to define type brands.
-
 ## Functions
 The following functions are available in the library:
 
@@ -162,6 +131,7 @@ This function takes an object of type `T` and a list of keys `K` and returns a n
 
 ## Peer Dependencies
 - `is-callable^1.2.7`
+- `@ptolemy2002/ts-brand-utils^1.0.0`
 
 ## Commands
 The following commands exist in the project:

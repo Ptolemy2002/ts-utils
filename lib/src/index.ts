@@ -38,6 +38,11 @@ export type AdvancedCondition<T> = Branded<{
     match?: (a: T, b: T) => boolean
 }, [typeof advancedConditionSymbol]>;
 
+export type SerializableAdvancedCondition<T> = Override<Omit<AdvancedCondition<T>, "match">, {
+    include?: Exclude<AdvancedCondition<T>["include"], () => any>,
+    exclude?: Exclude<AdvancedCondition<T>["exclude"], () => any>
+}>;
+
 export function isAdvancedCondition(value: any): value is AdvancedCondition<any> {
     return (
         typeof value === "object" &&
@@ -55,11 +60,25 @@ export function createAdvancedCondition<T>(
         exclude: [],
         match: Object.is,
         ...brand<[typeof advancedConditionSymbol], typeof condition>(condition)
-    }
+    };
+}
+
+export function createSerializableAdvancedCondition<T>(
+    condition: WithoutBrand<Omit<SerializableAdvancedCondition<T>, "__isAdvancedCondition">>
+): SerializableAdvancedCondition<T> {
+    return {
+        __isAdvancedCondition: true,
+        include: [],
+        exclude: [],
+        ...brand<[typeof advancedConditionSymbol], typeof condition>(condition)
+    };
 }
 
 export type ValueCondition<T> = AdvancedCondition<T> | T | ((v: T) => boolean) | (ValueCondition<T> | false)[];
 export type OptionalValueCondition<T> = ValueCondition<T> | null;
+export type SerializableValueCondition<T> = SerializableAdvancedCondition<T> | T | (SerializableValueCondition<T> | false)[];
+export type OptionalSerializableValueCondition<T> = SerializableValueCondition<T> | null;
+
 export function valueConditionMatches<T>(value: T, condition: OptionalValueCondition<T>): boolean {
     if (condition === null) return true;
     if (Array.isArray(condition)) return condition.some(c => c !== false && valueConditionMatches(value, c));

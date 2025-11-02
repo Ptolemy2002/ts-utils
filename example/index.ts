@@ -2,7 +2,9 @@ import {
     ValueOf, MaybeTransformer, MaybeTransformerRecord, MaybePromise, TAndOthers,
     Rename, valueConditionMatches, AtLeastOne,
     ValuesIntersection,
-    createAdvancedCondition
+    createAdvancedCondition,
+    ValueCondition,
+    SerializableValueCondition
 } from '@ptolemy2002/ts-utils';
 
 type Test = {
@@ -65,6 +67,10 @@ const atLeastOneTest4: AtLeastOneTest = { a: 1, b: '2' };
 const atLeastOneTest5: AtLeastOneTest = { a: 1, c: true };
 const atLeastOneTest6: AtLeastOneTest = { b: '2', c: true };
 const atLeastOneTest7: AtLeastOneTest = { a: 1, b: '2', c: true };
+
+type C1 = ValueCondition<number>;
+type C2 = SerializableValueCondition<number>;
+type ShouldBeTrue = C2 extends C1 ? true : false;
 
 const testValueCondition1 = valueConditionMatches(1, 1);
 const testValueCondition2 = valueConditionMatches(1, [1, 2]);

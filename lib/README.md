@@ -60,8 +60,18 @@ This type allows the user to specify a condition for matching a subset of type `
 
 The condition can then be passed to the `valueConditionMatches` function along with a value of type `T` to determine if the condition is met for that value.
 
+### SerializableValueCondition<T>
+This type is the same as `ValueCondition<T>` except that any function values are disallowed, making it safe for JSON serialization, assuming that `T` is also JSON-serializable.
+
+This is assignable to any field that accepts a `ValueCondition<T>`.
+
 ### OptionalValueCondition<T>
 This type is the same as `ValueCondition<T>` except that the value can also be `null`, indicating any value is acceptable.
+
+### OptionalSerializableValueCondition<T>
+This type is the same as `SerializableValueCondition<T>` except that the value can also be `null`, indicating any value is acceptable.
+
+This is assignable to any field that accepts an `OptionalValueCondition<T>`.
 
 ### AdvancedCondition<T>
 ```typescript
@@ -74,6 +84,11 @@ type AdvancedCondition<T> = Branded<{
     match?: (a: T, b: T) => boolean
 }, [typeof advancedConditionSymbol]>;
 ```
+
+### SerializableAdvancedCondition<T>
+This type is the same as `AdvancedCondition<T>` except that the `include` and `exclude` fields cannot be functions and the `match` field is omit, making it safe for JSON serialization, assuming that `T` is also JSON-serializable. Thus, you lose the ability to use custom matching logic when using this type.
+
+This is assignable to any field that accepts an `AdvancedCondition<T>`.
 
 ### ValuesIntersection<T>
 This type returns an intersection of all the possible values in an object of type `T`.
@@ -106,6 +121,15 @@ This function creates an instance of `AdvancedCondition` with the specified argu
 
 #### Returns
 `AdvancedCondition<T>` - The advanced condition instance.
+
+### createSerializableAdvancedCondition<T>
+#### Description
+This function is the same as `createAdvancedCondition` except that it takes a `SerializableAdvancedCondition<T>` as its argument. The underlying object created is the same, except that the `match` function is not included.
+
+#### Parameters
+- `condition` (`WithoutBrand<Omit<SerializableAdvancedCondition<T>, "__isAdvancedCondition">>`) - The arguments to use in constructing the condition.
+    - `include` - The value or values that must be included in the condition. If this is `false`, it will be ignored.
+    - `exclude` - The value or values that must be excluded from the condition. If this is `false`, it will be ignored.
 
 ### valueConditionMatches<T>
 #### Description

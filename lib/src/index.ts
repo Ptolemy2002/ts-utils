@@ -105,6 +105,24 @@ export function valueConditionMatches<T>(value: T, condition: OptionalValueCondi
     return included(value) && !excluded(value);
 }
 
+export type ValueConditionType = "advanced" | "function" | "value" | (ValueConditionType | "false")[];
+export type SerializableValueConditionType = "advanced" | "value" | (SerializableValueConditionType | "false")[];
+
+export function valueConditionType<T>(condition: ValueCondition<T>): ValueConditionType {
+    // Type assertion here because TS cannot infer that the filter will remove all false values
+    if (Array.isArray(condition)) return condition.map(c => c === false ? "false" : valueConditionType(c));
+    if (isAdvancedCondition(condition)) return "advanced";
+    if (isCallable(condition)) return "function";
+    return "value";
+}
+
+export function serializableValueConditionType<T>(condition: SerializableValueCondition<T>): SerializableValueConditionType {
+    // Type assertion here because TS cannot infer that the filter will remove all false values
+    if (Array.isArray(condition)) return condition.map(c => c === false ? "false" : serializableValueConditionType(c));
+    if (isAdvancedCondition(condition)) return "advanced";
+    return "value";
+}
+
 export type Rename<T, K extends keyof T, N extends string> = Pick<T, Exclude<keyof T, K>> & { [P in N]: T[K] }
 
 export type ValuesIntersection<T> = ValueOf<{

@@ -90,6 +90,16 @@ This type is the same as `AdvancedCondition<T>` except that the `include` and `e
 
 This is assignable to any field that accepts an `AdvancedCondition<T>`.
 
+### ValueConditionType
+This type is a union of string literals representing the possible types a `ValueCondition<T>` can be. It may also be a list of those same string literals plus `"false"`, representing the types of each element in an array condition. This array may be nested to any depth. To be precise, it is defined as follows:
+
+```typescript
+type ValueConditionType = "advanced" | "function" | "value" | (ValueConditionType | "false")[];
+```
+
+### SerializableValueConditionType
+This type is the same as `ValueConditionType` except that the `"function"` type is omitted, since functions are not allowed in `SerializableValueCondition<T>`.
+
 ### ValuesIntersection<T>
 This type returns an intersection of all the possible values in an object of type `T`.
 
@@ -141,6 +151,30 @@ This function takes a value of type `T` and a condition of type `OptionalValueCo
 
 #### Returns
 `boolean` - Whether the value meets the condition.
+
+### valueConditionType<T>
+#### Description
+This function takes a condition of type `ValueCondition<T>` and returns a string indicating the type of condition it is. The possible return values are:
+- `"advanced"` - The condition is an instance of `AdvancedCondition<T>`.
+- `"function"` - The condition is a function that takes a value of type `T` and (presumably) returns a boolean. The return type is not checked, due to potential side effects of calling the function.
+- `"value"` - The condition is a value of type `T`.
+- `(ValueConditionType | "false")[]` - The condition is an array of conditions, and the return value is an array of the types of each condition in the array.
+
+#### Parameters
+- `condition` (`ValueCondition<T>`) - The condition to check.
+
+#### Returns
+`ValueConditionType` - The type of the condition.
+
+### serializeValueConditionType<T>
+#### Description
+The same as `valueConditionType`, except that it specifically takes a `SerializableValueCondition<T>` and returns a `SerializableValueConditionType`. The difference is that function conditions are not serializable, so they are not included in the return type and cannot be specified in the argument.
+
+#### Parameters
+- `condition` (`SerializableValueCondition<T>`) - The condition to check.
+
+#### Returns
+`SerializableValueConditionType` - The type of the condition.
 
 ### omit<T, K extends keyof T>
 #### Description

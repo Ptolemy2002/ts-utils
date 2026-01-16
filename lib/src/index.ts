@@ -33,15 +33,17 @@ export declare const advancedConditionSymbol: unique symbol;
 export type AdvancedCondition<T> = Branded<{
     // This tag functions as a runtime brand check. The "Branded" wrapper works only on compile time
     __isAdvancedCondition: true,
-    include?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean) | false)[],
-    exclude?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean | false))[],
+    include?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean))[],
+    exclude?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean))[],
     match?: (a: T, b: T) => boolean
 }, [typeof advancedConditionSymbol]>;
 
-export type SerializableAdvancedCondition<T> = Override<Omit<AdvancedCondition<T>, "match">, {
-    include?: Exclude<AdvancedCondition<T>["include"], () => any>,
-    exclude?: Exclude<AdvancedCondition<T>["exclude"], () => any>
-}>;
+export type SerializableAdvancedCondition<T> = Branded<{
+    // This tag functions as a runtime brand check. The "Branded" wrapper works only on compile time
+    __isAdvancedCondition: true,
+    include?: T | false | (T | false)[],
+    exclude?: T | false | (T | false)[]
+}, [typeof advancedConditionSymbol]>;
 
 export function isAdvancedCondition(value: any): value is AdvancedCondition<any> {
     return (

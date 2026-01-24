@@ -180,7 +180,7 @@ This function takes a condition of type `ValueCondition<T>` and returns a string
 #### Returns
 `ValueConditionType` - The type of the condition.
 
-### serializeValueConditionType<T>
+### serializableValueConditionType<T>
 #### Description
 The same as `valueConditionType`, except that it specifically takes a `SerializableValueCondition<T>` and returns a `SerializableValueConditionType`. The difference is that function conditions are not serializable, so they are not included in the return type and cannot be specified in the argument.
 
@@ -189,6 +189,26 @@ The same as `valueConditionType`, except that it specifically takes a `Serializa
 
 #### Returns
 `SerializableValueConditionType` - The type of the condition.
+
+### zodSerializableAdvancedConditionSchemaTemplate<ZT extends ZodType>
+#### Description
+A function that allows you to pass in a Zod schema and wrap it such that it can be used to validate a `SerializableAdvancedCondition<T>` where `T` is the type represented by the Zod schema. Note: not the full extent of recursion in `SerializableAdvancedCondition<T>` is supported, nor are functions.
+
+#### Parameters
+- `zt` (`ZT`) - The Zod schema representing the type `T`.
+
+#### Returns
+`ZodObject<...>` - A Zod schema that can be used to validate a `SerializableAdvancedCondition<T>`.
+
+### zodSerializableValueConditionSchemaTemplate<ZT extends ZodType>
+#### Description
+A function that allows you to pass in a Zod schema and wrap it such that it can be used to validate a `SerializableValueCondition<T>` where `T` is the type represented by the Zod schema. Note: not the full extent of recursion in `SerializableValueCondition<T>` is supported, nor are functions.
+
+#### Parameters
+- `zt` (`ZT`) - The Zod schema representing the type `T`.
+
+#### Returns
+`ZodUnion<...>` - A Zod schema that can be used to validate a `SerializableValueCondition<T>`.
 
 ### omit<T, K extends keyof T>
 #### Description
@@ -204,6 +224,8 @@ This function takes an object of type `T` and a list of keys `K` and returns a n
 ## Peer Dependencies
 - `is-callable^1.2.7`
 - `@ptolemy2002/ts-brand-utils^1.0.0`
+- `@ptolemy2002/regex-utils^4.2.0`
+- `zod^4.3.6`
 
 ## Commands
 The following commands exist in the project:

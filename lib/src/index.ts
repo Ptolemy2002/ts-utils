@@ -1,5 +1,7 @@
-import isCallable = require("is-callable");
+import isCallable from "is-callable";
 import { Branded, WithoutBrand, brand } from "@ptolemy2002/ts-brand-utils";
+import { zodGenericFactory } from "@ptolemy2002/regex-utils";
+import z, { ZodLiteral, ZodObject, ZodType, ZodUnion, ZodArray } from "zod";
 
 export type ValueOf<T> = T[keyof T];
 
@@ -124,6 +126,41 @@ export function serializableValueConditionType<T>(condition: SerializableValueCo
     if (isAdvancedCondition(condition)) return "advanced";
     return "value";
 }
+
+const zodValueConditionGenericFactory = zodGenericFactory();
+
+export function zodSerializableAdvancedConditionSchemaTemplate<ZT extends ZodType>(
+    zt: ZT
+) {
+    return z.object({
+        include: z.union([
+            zt,
+            z.literal(false),
+            z.array(z.union([zt, z.literal(false)]))
+        ]),
+
+        exclude: z.union([
+            zt,
+            z.literal(false),
+            z.array(z.union([zt, z.literal(false)]))
+        ])
+    }).partial().transform(
+        (data) => createSerializableAdvancedCondition(data)
+    );
+}
+
+export function zodSerializableValueConditionSchemaTemplate<ZT extends ZodType>(
+    zt: ZT
+) {
+    return zodValueConditionGenericFactory(zt)((s) => {
+        return z.union([
+            s,
+            z.array(z.union([s, z.literal(false), zodSerializableAdvancedConditionSchemaTemplate(s)])),
+            zodSerializableAdvancedConditionSchemaTemplate(s)
+        ]);
+    })
+}
+
 
 export type Rename<T, K extends keyof T, N extends string> = Pick<T, Exclude<keyof T, K>> & { [P in N]: T[K] }
 

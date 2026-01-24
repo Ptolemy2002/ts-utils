@@ -27,12 +27,16 @@
         "release-major": "bash ./scripts/release.sh major"
     },
     "peerDependencies": {
+        "@ptolemy2002/regex-utils": "^4.2.0",
+        "@ptolemy2002/ts-brand-utils": "^1.0.0",
         "is-callable": "^1.2.7",
-        "@ptolemy2002/ts-brand-utils": "^1.0.0"
+        "zod": "^4.3.6"
     },
     "devDependencies": {
-        "@types/is-callable": "~1.1.2",
+        "@ptolemy2002/regex-utils": "^4.2.0",
         "@ptolemy2002/ts-brand-utils": "^1.0.0",
-        "is-callable": "^1.2.7"
+        "@types/is-callable": "~1.1.2",
+        "is-callable": "^1.2.7",
+        "zod": "^4.3.6"
     }
 }

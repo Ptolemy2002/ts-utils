@@ -5,8 +5,11 @@ import {
     createAdvancedCondition,
     ValueCondition,
     SerializableValueCondition,
-    ArrayWithOptional
+    ArrayWithOptional, zodSerializableValueConditionSchemaTemplate,
+    zodSerializableAdvancedConditionSchemaTemplate,
+    SerializableAdvancedCondition
 } from '@ptolemy2002/ts-utils';
+import z from 'zod';
 
 type Test = {
     a: number;
@@ -99,5 +102,22 @@ console.assert(testValueCondition7, "Test Value Condition 7");
 console.assert(!testValueCondition8, "Test Value Condition 8");
 console.assert(testValueCondition9, "Test Value Condition 9");
 console.assert(!testValueCondition10, "Test Value Condition 10");
+
+const testAdvancedConditionSchema = zodSerializableAdvancedConditionSchemaTemplate(z.string());
+const testAdvancedConditionSchemaParsed = testAdvancedConditionSchema.parse({
+    include: ["test", false, "test2"],
+    exclude: ["test3"]
+});
+const testAdvancedConditionValue: SerializableAdvancedCondition<string> = testAdvancedConditionSchemaParsed;
+
+const testValueConditionSchema = zodSerializableValueConditionSchemaTemplate(z.string());
+const testValueConditionSchemaParsed = testValueConditionSchema.parse([
+    "test", false,
+    {
+        include: ["test2", false, "test3"],
+        exclude: ["test4"]
+    }
+]);
+const testValueConditionValue: SerializableValueCondition<string> = testValueConditionSchemaParsed;
 
 console.log("Compiled without errors");

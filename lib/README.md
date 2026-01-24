@@ -106,6 +106,20 @@ This type returns an intersection of all the possible values in an object of typ
 ### Contains<L extends unknown[], T>
 This type returns a boolean indicating whether the type `T` is contained in the array `L`.
 
+### ArrayWithOptional<AR extends unknown[], AO extends unknown[]>
+This type returns a union of the array `AR` and an array that consists of all the elements of `AR` followed by all the elements of `AO`. You can chain it for multiple optional segments, like so:
+```typescript
+type MyArray = ArrayWithOptional<[number, string], ArrayWithOptional<[boolean], [Date]>>;
+```
+
+The resulting type `MyArray` would be equivalent to:
+```typescript
+type MyArray =
+    | [number, string]
+    | [number, string, boolean]
+    | [number, string, boolean, Date];
+```
+
 ## Functions
 The following functions are available in the library:
 

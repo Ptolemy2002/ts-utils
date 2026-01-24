@@ -4,7 +4,8 @@ import {
     ValuesIntersection,
     createAdvancedCondition,
     ValueCondition,
-    SerializableValueCondition
+    SerializableValueCondition,
+    ArrayWithOptional
 } from '@ptolemy2002/ts-utils';
 
 type Test = {
@@ -67,6 +68,11 @@ const atLeastOneTest4: AtLeastOneTest = { a: 1, b: '2' };
 const atLeastOneTest5: AtLeastOneTest = { a: 1, c: true };
 const atLeastOneTest6: AtLeastOneTest = { b: '2', c: true };
 const atLeastOneTest7: AtLeastOneTest = { a: 1, b: '2', c: true };
+
+type ArrayWithOptionalTest = ArrayWithOptional<[number, string], ArrayWithOptional<[boolean], [Date]>>;
+const arrayWithOptionalTest1: ArrayWithOptionalTest = [1, '2'];
+const arrayWithOptionalTest2: ArrayWithOptionalTest = [1, '2', true];
+const arrayWithOptionalTest3: ArrayWithOptionalTest = [1, '2', false, new Date()];
 
 type C1 = ValueCondition<number>;
 type C2 = SerializableValueCondition<number>;

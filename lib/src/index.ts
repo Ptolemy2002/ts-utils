@@ -155,3 +155,5 @@ export function omit<T extends object, K extends keyof T>(obj: T, ...keys: K[]):
     keys.forEach((key) => delete _[key])
     return _
 }
+
+export type ArrayWithOptional<AR extends unknown[], AO extends unknown[]> = AR | [...AR, ...AO];

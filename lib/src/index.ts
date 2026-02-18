@@ -196,7 +196,7 @@ export function omit<T extends object, K extends keyof T>(obj: T, ...keys: K[]):
 export type ArrayWithOptional<AR extends unknown[], AO extends unknown[]> = AR | [...AR, ...AO];
 
 export abstract class Collection<T> {
-    abstract length(): number;
+    abstract get length(): number;
     abstract at(index: number): T | undefined;
     abstract find(predicate: (item: T, index: number, array: Collection<T>) => boolean): T | undefined;
     abstract findIndex(predicate: (item: T, index: number, array: Collection<T>) => boolean): number;

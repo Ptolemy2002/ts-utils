@@ -194,3 +194,39 @@ export function omit<T extends object, K extends keyof T>(obj: T, ...keys: K[]):
 }
 
 export type ArrayWithOptional<AR extends unknown[], AO extends unknown[]> = AR | [...AR, ...AO];
+
+export abstract class Collection<T> {
+    abstract length(): number;
+    abstract at(index: number): T | undefined;
+    abstract find(predicate: (item: T, index: number, array: Collection<T>) => boolean): T | undefined;
+    abstract findIndex(predicate: (item: T, index: number, array: Collection<T>) => boolean): number;
+    abstract indexOf(item: T, fromIndex?: number): number;
+    abstract includes(item: T, fromIndex?: number): boolean;
+    abstract some(predicate: (item: T, index: number, array: Collection<T>) => boolean): boolean;
+    abstract every(predicate: (item: T, index: number, array: Collection<T>) => boolean): boolean;
+    abstract forEach(callback: (item: T, index: number, array: Collection<T>) => void): void;
+    abstract map<U>(callback: (item: T, index: number, array: Collection<T>) => U): U[];
+    abstract filter(predicate: (item: T, index: number, array: Collection<T>) => boolean): Collection<T>;
+    abstract flat(depth?: number): Collection<T>;
+    abstract flatMap<U>(callback: (item: T, index: number, array: Collection<T>) => U | U[], depth?: number): U[];
+    abstract slice(start?: number, end?: number): Collection<T>;
+    abstract concat(...others: (T | T[] | Collection<T>)[]): Collection<T>;
+    abstract push(...items: T[]): void;
+    abstract pop(): T | undefined;
+    abstract shift(): T | undefined;
+    abstract unshift(...items: T[]): number;
+    abstract splice(start: number, deleteCount?: number, ...items: T[]): Collection<T>;
+    abstract reverse(): Collection<T>;
+    abstract sort(compareFn?: (a: T, b: T) => number): Collection<T>;
+    abstract fill(value: T, start?: number, end?: number): Collection<T>;
+    abstract [Symbol.iterator](): Iterator<T>;
+    abstract entries(): IterableIterator<[number, T]>;
+    abstract keys(): IterableIterator<number>;
+    abstract values(): IterableIterator<T>;
+
+    abstract reduce<U>(accumulator: U, callback: (accumulator: U, item: T, index: number, array: Collection<T>) => U): U;
+    abstract reduce(callback: (accumulator: T, item: T, index: number, array: Collection<T>) => T): T;
+    abstract reduce<U>(callback: (accumulator: U | T, item: T, index: number, array: Collection<T>) => U | T, initialValue?: U): U | T;
+
+    abstract toArray(): T[];
+}

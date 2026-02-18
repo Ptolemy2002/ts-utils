@@ -221,6 +221,12 @@ This function takes an object of type `T` and a list of keys `K` and returns a n
 #### Returns
 `Omit<T, K>` - The object with the keys omitted.
 
+## Classes
+This library exports the following classes:
+
+### Collection<T>
+An abstract class representing an object that can be treated as an array, but with some methods overwritten to use a collection of this type rather than a standard array. No methods are implemented here, so it is up to the extending class to do it all. This is just a template for the extending class to ensure that it has all the necessary methods and that they return the correct types.
+
 ## Peer Dependencies
 - `is-callable^1.2.7`
 - `@ptolemy2002/ts-brand-utils^1.0.0`

@@ -41,6 +41,9 @@ This type returns a union of all the keys in `T` that have a value assignable to
 ### PartialBy<T, K extends keyof T>
 This type returns a type that is the same as `T` except that the keys in `K` are optional.
 
+### RequiredBy<T, K extends keyof T>
+This type returns a type that is the same as `T` except that the keys in `K` are required.
+
 ### AtLeastOne<T, U = {[K in keyof T]: Pick<T, K> }>
 This type returns a type that is the same as `T` except that at least one key is required.
 

@@ -82,14 +82,14 @@ declare const advancedConditionSymbol: unique symbol;
 
 type AdvancedCondition<T> = Branded<{
     __isAdvancedCondition: true,
-    include?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean) | false)[],
-    exclude?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean | false))[],
+    include?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean))[],
+    exclude?: T | false | ((v: T) => boolean) | (T | false | ((v: T) => boolean))[],
     match?: (a: T, b: T) => boolean
 }, [typeof advancedConditionSymbol]>;
 ```
 
 ### SerializableAdvancedCondition<T>
-This type is the same as `AdvancedCondition<T>` except that the `include` and `exclude` fields cannot be functions and the `match` field is omit, making it safe for JSON serialization, assuming that `T` is also JSON-serializable. Thus, you lose the ability to use custom matching logic when using this type.
+This type is the same as `AdvancedCondition<T>` except that the `include` and `exclude` fields cannot be functions and the `match` field is omitted, making it safe for JSON serialization, assuming that `T` is also JSON-serializable. Thus, you lose the ability to use custom matching logic when using this type.
 
 This is assignable to any field that accepts an `AdvancedCondition<T>`.
 
@@ -193,25 +193,62 @@ The same as `valueConditionType`, except that it specifically takes a `Serializa
 #### Returns
 `SerializableValueConditionType` - The type of the condition.
 
-### zodSerializableAdvancedConditionSchemaTemplate<ZT extends ZodType>
+### zodAdvancedConditionSchemaTemplate<T>
 #### Description
-A function that allows you to pass in a Zod schema and wrap it such that it can be used to validate a `SerializableAdvancedCondition<T>` where `T` is the type represented by the Zod schema. Note: not the full extent of recursion in `SerializableAdvancedCondition<T>` is supported, nor are functions.
+Given a Zod schema for `T`, this function returns a Zod schema that validates an `AdvancedCondition<T>`. The parsed output is created with `createAdvancedCondition`, so the `__isAdvancedCondition` tag and the usual defaults are always present.
+
+Input rules:
+- The input must be an object with at least one of `include`, `exclude`, or `match` defined.
+- `__isAdvancedCondition` may be provided, but only as `true`. It is not required, as the schema adds it.
+- Unknown keys are rejected. This prevents arbitrary objects from being interpreted as an empty condition that matches everything.
+
+Functions in `include`, `exclude`, and `match` are checked using `zodFunctionSchema` from `@ptolemy2002/zod-utils`. This has the following consequences:
+- The functions are **called during parsing** with the sample values. Avoid passing functions with side effects.
+- An `include` or `exclude` predicate must return a boolean when called with `sample1`.
+- A `match` function must return `true` for `(sample1, sample1)` and `false` for `(sample1, sample2)`. Choose samples that no reasonable match function would consider equal.
+- The functions in the output are wrappers that validate their arguments and return value on every call, throwing a `ZodError` if either is invalid.
 
 #### Parameters
-- `zt` (`ZT`) - The Zod schema representing the type `T`.
+- `zt` (`ZodType<T>`) - The Zod schema representing the type `T`.
+- `sample1` (`T`) - A sample value used to test functions during parsing.
+- `sample2` (`T`) - A second sample value, different from `sample1`, used to test `match` functions.
 
 #### Returns
-`ZodObject<...>` - A Zod schema that can be used to validate a `SerializableAdvancedCondition<T>`.
+`ZodType<AdvancedCondition<T>>` - A Zod schema that can be used to validate an `AdvancedCondition<T>`.
 
-### zodSerializableValueConditionSchemaTemplate<ZT extends ZodType>
+### zodSerializableAdvancedConditionSchemaTemplate<T>
 #### Description
-A function that allows you to pass in a Zod schema and wrap it such that it can be used to validate a `SerializableValueCondition<T>` where `T` is the type represented by the Zod schema. Note: not the full extent of recursion in `SerializableValueCondition<T>` is supported, nor are functions.
+The same as `zodAdvancedConditionSchemaTemplate`, except that it validates a `SerializableAdvancedCondition<T>`. The parsed output is created with `createSerializableAdvancedCondition`. The input must have at least one of `include` or `exclude` defined. Functions are not allowed anywhere, and a `match` key is rejected like any other unknown key. Because no functions are ever called, no sample values are needed.
 
 #### Parameters
-- `zt` (`ZT`) - The Zod schema representing the type `T`.
+- `zt` (`ZodType<T>`) - The Zod schema representing the type `T`.
 
 #### Returns
-`ZodUnion<...>` - A Zod schema that can be used to validate a `SerializableValueCondition<T>`.
+`ZodType<SerializableAdvancedCondition<T>>` - A Zod schema that can be used to validate a `SerializableAdvancedCondition<T>`.
+
+### zodValueConditionSchemaTemplate<T>
+#### Description
+Given a Zod schema for `T`, this function returns a Zod schema that validates a `ValueCondition<T>`, including arrays nested to any depth. Advanced conditions are validated with `zodAdvancedConditionSchemaTemplate`, so the same input rules apply to them. Function conditions are called once with `sample1` during parsing, must return a boolean, and are wrapped in the same way.
+
+Options are tried in the same order `valueConditionMatches` checks them: array, function, advanced condition, then a plain value of type `T`. As a result, an object with at least one of `include`, `exclude`, or `match` and no other keys is always treated as an advanced condition, even if it would also be a valid `T`.
+
+#### Parameters
+- `zt` (`ZodType<T>`) - The Zod schema representing the type `T`.
+- `sample1` (`T`) - A sample value used to test functions during parsing.
+- `sample2` (`T`) - A second sample value, different from `sample1`, used to test `match` functions.
+
+#### Returns
+`ZodType<ValueCondition<T>>` - A Zod schema that can be used to validate a `ValueCondition<T>`.
+
+### zodSerializableValueConditionSchemaTemplate<T>
+#### Description
+The same as `zodValueConditionSchemaTemplate`, except that it validates a `SerializableValueCondition<T>`. Function conditions are not allowed, and advanced conditions are validated with `zodSerializableAdvancedConditionSchemaTemplate`. Arrays may be nested to any depth.
+
+#### Parameters
+- `zt` (`ZodType<T>`) - The Zod schema representing the type `T`.
+
+#### Returns
+`ZodType<SerializableValueCondition<T>>` - A Zod schema that can be used to validate a `SerializableValueCondition<T>`.
 
 ### omit<T, K extends keyof T>
 #### Description
@@ -233,7 +270,7 @@ An abstract class representing an object that can be treated as an array, but wi
 ## Peer Dependencies
 - `is-callable^1.2.7`
 - `@ptolemy2002/ts-brand-utils^1.0.0`
-- `@ptolemy2002/regex-utils^4.2.0`
+- `@ptolemy2002/zod-utils^1.7.0`
 - `zod^4.3.6`
 
 ## Commands

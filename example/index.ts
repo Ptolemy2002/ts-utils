@@ -7,7 +7,11 @@ import {
     SerializableValueCondition,
     ArrayWithOptional, zodSerializableValueConditionSchemaTemplate,
     zodSerializableAdvancedConditionSchemaTemplate,
-    SerializableAdvancedCondition
+    SerializableAdvancedCondition,
+    zodAdvancedConditionSchemaTemplate,
+    zodValueConditionSchemaTemplate,
+    AdvancedCondition,
+    isAdvancedCondition
 } from '@ptolemy2002/ts-utils';
 import z from 'zod';
 
@@ -119,5 +123,51 @@ const testValueConditionSchemaParsed = testValueConditionSchema.parse([
     }
 ]);
 const testValueConditionValue: SerializableValueCondition<string> = testValueConditionSchemaParsed;
+
+// Serializable schemas support nested arrays and inject the tag
+const testNestedSerializableParsed = testValueConditionSchema.parse(["test", [false, { exclude: "test2" }]]);
+console.assert(valueConditionMatches("test3", testNestedSerializableParsed), "Serializable Schema: nested array");
+console.assert(isAdvancedCondition(testAdvancedConditionSchema.parse({ include: "test" })), "Serializable Schema: tag injected");
+
+// Serializable schemas reject functions, match, unknown keys, and conditions with no keys
+console.assert(!testAdvancedConditionSchema.safeParse({ include: (v: string) => v === "test" }).success, "Serializable Schema: function rejected");
+console.assert(!testAdvancedConditionSchema.safeParse({ include: "test", match: Object.is }).success, "Serializable Schema: match rejected");
+console.assert(!testAdvancedConditionSchema.safeParse({ include: "test", other: 1 }).success, "Serializable Schema: unknown key rejected");
+console.assert(!testAdvancedConditionSchema.safeParse({}).success, "Serializable Schema: empty object rejected");
+console.assert(!testAdvancedConditionSchema.safeParse({ __isAdvancedCondition: true }).success, "Serializable Schema: tag-only object rejected");
+console.assert(!testValueConditionSchema.safeParse(["test", () => true]).success, "Serializable Schema: function in array rejected");
+
+// Non-serializable schemas take two different sample values, used to test functions during parsing
+const testFullAdvancedConditionSchema = zodAdvancedConditionSchemaTemplate(z.string(), "a", "b");
+const testFullAdvancedConditionParsed = testFullAdvancedConditionSchema.parse({
+    include: [(v: string) => v.startsWith("test"), false],
+    exclude: "test2",
+    match: (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
+});
+const testFullAdvancedConditionValue: AdvancedCondition<string> = testFullAdvancedConditionParsed;
+console.assert(valueConditionMatches("test1", testFullAdvancedConditionValue), "Advanced Schema: include function");
+console.assert(!valueConditionMatches("TEST2", testFullAdvancedConditionValue), "Advanced Schema: custom match");
+console.assert(!valueConditionMatches("other", testFullAdvancedConditionValue), "Advanced Schema: not included");
+
+// match must return true for (sample1, sample1) and false for (sample1, sample2)
+console.assert(!testFullAdvancedConditionSchema.safeParse({ match: () => true }).success, "Advanced Schema: bad match rejected");
+console.assert(!testFullAdvancedConditionSchema.safeParse({ include: () => "yes" }).success, "Advanced Schema: non-boolean predicate rejected");
+console.assert(!testFullAdvancedConditionSchema.safeParse({}).success, "Advanced Schema: empty object rejected");
+
+const testFullValueConditionSchema = zodValueConditionSchemaTemplate(z.string(), "a", "b");
+const testFullValueConditionParsed = testFullValueConditionSchema.parse([
+    "test", false,
+    [(v: string) => v.length > 10, { include: "test2" }]
+]);
+const testFullValueConditionValue: ValueCondition<string> = testFullValueConditionParsed;
+console.assert(valueConditionMatches("test", testFullValueConditionValue), "Value Schema: plain value");
+console.assert(valueConditionMatches("test2", testFullValueConditionValue), "Value Schema: nested advanced condition");
+console.assert(valueConditionMatches("a very long string", testFullValueConditionValue), "Value Schema: nested function");
+console.assert(!valueConditionMatches("other", testFullValueConditionValue), "Value Schema: no match");
+
+// With an object T, a condition-shaped object is treated as an advanced condition, while other objects are values of T
+const testObjectValueConditionSchema = zodValueConditionSchemaTemplate(z.object({ x: z.number().optional() }), { x: 1 }, { x: 2 });
+console.assert(isAdvancedCondition(testObjectValueConditionSchema.parse({ include: [{ x: 1 }] })), "Value Schema: object T advanced condition");
+console.assert(!isAdvancedCondition(testObjectValueConditionSchema.parse({ x: 3 })), "Value Schema: object T value");
 
 console.log("Compiled without errors");

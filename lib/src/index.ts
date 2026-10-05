@@ -1,7 +1,7 @@
 import isCallable from "is-callable";
 import { Branded, WithoutBrand, brand } from "@ptolemy2002/ts-brand-utils";
-import { zodGenericFactory } from "@ptolemy2002/regex-utils";
-import z, { ZodLiteral, ZodObject, ZodType, ZodUnion, ZodArray } from "zod";
+import { zodFunctionSchema } from "@ptolemy2002/zod-utils";
+import z, { ZodType } from "zod";
 
 export type ValueOf<T> = T[keyof T];
 
@@ -15,19 +15,19 @@ export type MaybeArray<T> = T | T[];
 
 export type TAndOthers<T, K extends keyof any = PropertyKey> = Record<K, any> & T;
 
-export type KeysMatching<T, V> = {[K in keyof T]-?: T[K] extends V ? K : never}[keyof T];
-export type KeysNotMatching<T, V> = {[K in keyof T]-?: T[K] extends V ? never : K}[keyof T];
+export type KeysMatching<T, V> = { [K in keyof T]-?: T[K] extends V ? K : never }[keyof T];
+export type KeysNotMatching<T, V> = { [K in keyof T]-?: T[K] extends V ? never : K }[keyof T];
 
-export type EqualTypes<T, U, Y=unknown, N=never> =
-  (<G>() => G extends T ? 1 : 2) extends
-  (<G>() => G extends U ? 1 : 2) ? Y : N;
+export type EqualTypes<T, U, Y = unknown, N = never> =
+    (<G>() => G extends T ? 1 : 2) extends
+    (<G>() => G extends U ? 1 : 2) ? Y : N;
 
-export type KeysMatchingEqualTypes<T, V> = {[K in keyof T]-?: EqualTypes<T[K], V, K>}[keyof T];
-export type KeysNotMatchingEqualTypes<T, V> = {[K in keyof T]-?: EqualTypes<T[K], V, never, K>}[keyof T];
+export type KeysMatchingEqualTypes<T, V> = { [K in keyof T]-?: EqualTypes<T[K], V, K> }[keyof T];
+export type KeysNotMatchingEqualTypes<T, V> = { [K in keyof T]-?: EqualTypes<T[K], V, never, K> }[keyof T];
 
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 export type RequiredBy<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
-export type AtLeastOne<T, U = {[K in keyof T]: Pick<T, K> }> = Partial<T> & U[keyof U];
+export type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> & U[keyof U];
 
 export type Override<T, U> = Omit<T, keyof U> & U;
 
@@ -92,7 +92,7 @@ export function valueConditionMatches<T>(value: T, condition: OptionalValueCondi
     // If the condition value here is not a condition object, it must be of type T, so we can directly compare it
     if (!isAdvancedCondition(condition)) return Object.is(value, condition);
 
-    let { include=[], exclude=[], match=Object.is } = condition;
+    let { include = [], exclude = [], match = Object.is } = condition;
 
     if (!Array.isArray(include)) include = [include];
     if (!Array.isArray(exclude)) exclude = [exclude];
@@ -128,38 +128,125 @@ export function serializableValueConditionType<T>(condition: SerializableValueCo
     return "value";
 }
 
-const zodValueConditionGenericFactory = zodGenericFactory();
+export function zodAdvancedConditionSchemaTemplate<T>(
+    zt: ZodType<T>, sample1: T, sample2: T
+): ZodType<AdvancedCondition<T>> {
+    const validatorFunctionSchema = zodFunctionSchema({
+        input: z.tuple([zt]),
+        output: z.boolean(),
+        trials: [
+            {
+                input: [sample1],
+                outputSchema: z.boolean(),
+                error: "forbid"
+            }
+        ]
+    });
 
-export function zodSerializableAdvancedConditionSchemaTemplate<ZT extends ZodType>(
-    zt: ZT
-) {
-    return z.object({
-        include: z.union([
-            zt,
-            z.literal(false),
-            z.array(z.union([zt, z.literal(false)]))
-        ]),
+    // Options are ordered to mirror the checks in valueConditionMatches,
+    // since z.union returns the first option that succeeds.
+    const validatorItemSchema = z.union([z.literal(false), validatorFunctionSchema, zt]);
+    const validatorUnionSchema = z.union([z.array(validatorItemSchema), validatorItemSchema]);
 
-        exclude: z.union([
-            zt,
-            z.literal(false),
-            z.array(z.union([zt, z.literal(false)]))
-        ])
-    }).partial().transform(
-        (data) => createSerializableAdvancedCondition(data)
+    // Strict and requiring at least one key so that arbitrary objects are not interpreted
+    // as an empty (match-all) condition.
+    // The tag is accepted but not required, as the transform always injects it.
+    return z.strictObject({
+        __isAdvancedCondition: z.literal(true).optional(),
+        include: validatorUnionSchema.optional(),
+        exclude: validatorUnionSchema.optional(),
+
+        match: zodFunctionSchema({
+            input: z.tuple([zt, zt]),
+            output: z.boolean(),
+            trials: [
+                {
+                    id: "matches_same_object",
+                    input: [sample1, sample1],
+                    outputSchema: z.literal(true),
+                    error: "forbid"
+                },
+
+                // Requires sample1 and sample2 to be values that no reasonable
+                // match function would consider equal
+                {
+                    id: "does_not_match_different_objects",
+                    input: [sample1, sample2],
+                    outputSchema: z.literal(false),
+                    error: "forbid"
+                }
+            ]
+        }).optional()
+    }).refine(
+        (data) => data.include !== undefined || data.exclude !== undefined || data.match !== undefined,
+        { message: "At least one of include, exclude, or match must be specified" }
+    ).transform(
+        ({ __isAdvancedCondition, ...data }) => createAdvancedCondition(data)
     );
 }
 
-export function zodSerializableValueConditionSchemaTemplate<ZT extends ZodType>(
-    zt: ZT
-) {
-    return zodValueConditionGenericFactory(zt)((s) => {
-        return z.union([
-            s,
-            z.array(z.union([s, z.literal(false), zodSerializableAdvancedConditionSchemaTemplate(s)])),
-            zodSerializableAdvancedConditionSchemaTemplate(s)
-        ]);
-    })
+export function zodSerializableAdvancedConditionSchemaTemplate<T>(
+    zt: ZodType<T>
+): ZodType<SerializableAdvancedCondition<T>> {
+    const valueItemSchema = z.union([z.literal(false), zt]);
+    const valueUnionSchema = z.union([z.array(valueItemSchema), valueItemSchema]);
+
+    // Strict, so a "match" key (or any other unknown key) is rejected
+    return z.strictObject({
+        __isAdvancedCondition: z.literal(true).optional(),
+        include: valueUnionSchema.optional(),
+        exclude: valueUnionSchema.optional()
+    }).refine(
+        (data) => data.include !== undefined || data.exclude !== undefined,
+        { message: "At least one of include or exclude must be specified" }
+    ).transform(
+        ({ __isAdvancedCondition, ...data }) => createSerializableAdvancedCondition<T>(data)
+    );
+}
+
+export function zodValueConditionSchemaTemplate<T>(zt: ZodType<T>, sample1: T, sample2: T): ZodType<ValueCondition<T>> {
+    // Options are ordered to mirror the checks in valueConditionMatches,
+    // since z.union returns the first option that succeeds.
+    const schema: ZodType<ValueCondition<T>> = z.union([
+        z.array(
+            z.union([z.literal(false),
+            // This lazy evaluation is what allows recursion
+            z.lazy(() => schema)])
+        ),
+
+        zodFunctionSchema({
+            input: z.tuple([zt]),
+            output: z.boolean(),
+            trials: [
+                {
+                    input: [sample1],
+                    outputSchema: z.boolean()
+                }
+            ]
+        }),
+
+        zodAdvancedConditionSchemaTemplate(zt, sample1, sample2),
+        zt
+    ]);
+
+    return schema;
+}
+
+export function zodSerializableValueConditionSchemaTemplate<T>(zt: ZodType<T>): ZodType<SerializableValueCondition<T>> {
+    // Essentially same as above, but with no function option and deferring to the serializable advanced condition schema template
+    // instead of the regular advanced condition schema template
+    const schema: ZodType<SerializableValueCondition<T>> = z.union([
+        z.array(
+            z.union([z.literal(false),
+            // This lazy evaluation is what allows recursion
+            z.lazy(() => schema)])
+        ),
+
+        zodSerializableAdvancedConditionSchemaTemplate(zt),
+        zt
+    ]);
+
+    return schema;
 }
 
 
@@ -177,16 +264,16 @@ export type ValuesIntersection<T> = ValueOf<{
 export type Contains<L extends unknown[], T> =
     // Any number of other elements folowed by T
     L extends [...unknown[], T] ?
-        true
+    true
     // T followed by any number of other elements
     : L extends [T, ...unknown[]] ?
-        true
+    true
     // T is the only element
     : L extends [T] ?
-        true
+    true
     // T is not in the list 
     : false
-;
+    ;
 
 export function omit<T extends object, K extends keyof T>(obj: T, ...keys: K[]): Omit<T, K> {
     const _ = { ...obj }

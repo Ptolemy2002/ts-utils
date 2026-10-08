@@ -26,17 +26,16 @@
         "release-minor": "bash ./scripts/release.sh minor",
         "release-major": "bash ./scripts/release.sh major"
     },
-    "peerDependencies": {
+    "dependencies": {
         "@ptolemy2002/ts-brand-utils": "^1.0.0",
         "@ptolemy2002/zod-utils": "^1.7.0",
-        "is-callable": "^1.2.7",
+        "is-callable": "^1.2.7"
+    },
+    "peerDependencies": {
         "zod": "^4.3.6"
     },
     "devDependencies": {
-        "@ptolemy2002/ts-brand-utils": "^1.0.0",
-        "@ptolemy2002/zod-utils": "^1.7.0",
         "@types/is-callable": "~1.1.2",
-        "is-callable": "^1.2.7",
         "zod": "^4.3.6"
     }
 }

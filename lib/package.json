@@ -14,7 +14,7 @@
     },
     "scripts": {
         "build": "tsc --project ./tsconfig.json",
-        "postinstall": "npx typesync",
+        "prepare": "npx typesync",
         "uninstall": "bash ./scripts/uninstall.sh",
         "reinstall": "bash ./scripts/reinstall.sh",
         "example-uninstall": "bash ./scripts/example-uninstall.sh",
